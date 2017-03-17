@@ -1,10 +1,11 @@
-package com.walfud.bindviewdemo;
+package com.walfud.bindview.app;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import com.example.BindView;
+import com.walfud.bindview.apt.BindView;
+import com.walfud.bindviewdemo.R;
 
 public class MainActivity extends Activity {
 
