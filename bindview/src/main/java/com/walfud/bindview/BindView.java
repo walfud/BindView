@@ -8,6 +8,7 @@ import android.app.Activity;
 
 public class BindView {
     public static void inject(Activity activity) {
-
+        // TODO:
+//        String bindViewClass = activity.getLocalClassName() + "$$BindView"
     }
 }

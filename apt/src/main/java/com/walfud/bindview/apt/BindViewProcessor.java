@@ -5,6 +5,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
@@ -114,7 +115,20 @@ public class BindViewProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PRIVATE)
                         .returns(int.class)
                         .addParameter(String.class, "name")
-                        .addComment("TODO: ...")
+                        .addStatement("$T rList = new $T()", ParameterizedTypeName.get(List.class, String.class), ParameterizedTypeName.get(ArrayList.class, String.class));
+                for (Element rootElement : roundEnvironment.getRootElements()) {
+                    String name = rootElement.toString();
+                    if (name.endsWith(".R")) {
+                        getResourceIdMethod.addStatement("rList.add($S)", name.substring(0, name.length() - 2));
+                    }
+                }
+                getResourceIdMethod
+                        .beginControlFlow("for ($T pkg : rList)", String.class)
+                        .addStatement("$T id = mTarget.getResources().getIdentifier(name, \"id\", pkg);", int.class)
+                        .beginControlFlow("if (id != 0)")
+                        .addStatement("return id")
+                        .endControlFlow()
+                        .endControlFlow()
                         .addStatement("return 0");
                 codeClass.addMethod(getResourceIdMethod.build());
 
@@ -141,7 +155,7 @@ public class BindViewProcessor extends AbstractProcessor {
     }
 
     /**
-     *    mTv -> tv
+     * mTv -> tv
      * mFooTv -> tv_foo
      *
      * @param javaName
@@ -174,8 +188,4 @@ public class BindViewProcessor extends AbstractProcessor {
             this.xmlName = xmlName;
         }
     }
-//
-//    private String getRPackage() {
-//
-//    }
 }

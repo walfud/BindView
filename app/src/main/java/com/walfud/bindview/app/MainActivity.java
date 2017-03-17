@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
         com.walfud.bindview.BindView.inject(this);
 
         findViewById(foo());
-//        mTv.setText("bind successfully");
+        mFooTv.setText("bind successfully");
     }
 
     private int foo() {
