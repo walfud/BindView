@@ -7,6 +7,8 @@
 
 ![](https://github.com/walfud/BindView/blob/master/doc/usage.png)
 
+![](https://github.com/walfud/BindView/blob/master/doc/show.png)
+
 License
 =======
     Copyright 2013 walfud.
