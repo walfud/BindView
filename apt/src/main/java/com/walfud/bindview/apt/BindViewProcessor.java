@@ -5,10 +5,8 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeVariableName;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,22 +54,22 @@ public class BindViewProcessor extends AbstractProcessor {
         try {
             //
             Map<TypeElement, List<VariableElement>> class_field = new HashMap<>();
-            for (Element element : roundEnvironment.getElementsAnnotatedWith(BindView.class)) {
-                VariableElement bindViewField = (VariableElement) element;
-                TypeElement clazz = (TypeElement) bindViewField.getEnclosingElement();
+            for (Element element : roundEnvironment.getElementsAnnotatedWith(Bind.class)) {
+                VariableElement bindField = (VariableElement) element;
+                TypeElement clazz = (TypeElement) bindField.getEnclosingElement();
 
-                List<VariableElement> bindViewFieldList = class_field.get(clazz);
-                if (bindViewFieldList == null) {
-                    bindViewFieldList = new ArrayList<>();
-                    class_field.put(clazz, bindViewFieldList);
+                List<VariableElement> bindFieldList = class_field.get(clazz);
+                if (bindFieldList == null) {
+                    bindFieldList = new ArrayList<>();
+                    class_field.put(clazz, bindFieldList);
                 }
-                bindViewFieldList.add(bindViewField);
+                bindFieldList.add(bindField);
             }
 
             //
             for (Map.Entry<TypeElement, List<VariableElement>> entry : class_field.entrySet()) {
                 TypeElement clazz = entry.getKey();
-                List<VariableElement> bindViewFieldList = entry.getValue();
+                List<VariableElement> bindFieldList = entry.getValue();
 
                 // Class `Xxx$$BindView`: public class Xxx$$BindView
                 TypeSpec.Builder codeClass = TypeSpec.classBuilder(clazz.getSimpleName().toString() + "$$BindView")
@@ -92,46 +90,13 @@ public class BindViewProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PUBLIC)
                         .returns(TypeName.VOID)
                         .addParameter(ClassName.get("android.view", "View"), "source");
-                for (VariableElement bindViewField : bindViewFieldList) {
-                    String javaName = bindViewField.getSimpleName().toString();
+                for (VariableElement bindField : bindFieldList) {
+                    String javaName = bindField.getSimpleName().toString();
                     String xmlName = javaName2XmlName(javaName);
 
-                    bindMethod.addStatement("mTarget.$L = $$(source, getResourceId($S))", javaName, xmlName);
+                    bindMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, bindField.asType(), xmlName);
                 }
                 codeClass.addMethod(bindMethod.build());
-
-                // Method `$`: private <T extends View> T $(View view, int id)
-                MethodSpec.Builder $Method = MethodSpec.methodBuilder("$")
-                        .addModifiers(Modifier.PRIVATE)
-                        .addTypeVariable(TypeVariableName.get("T", ClassName.get("android.view", "View")))
-                        .returns(TypeVariableName.get("T", ClassName.get("android.view", "View")))
-                        .addParameter(ClassName.get("android.view", "View"), "source")
-                        .addParameter(TypeName.INT, "id")
-                        .addStatement("return (T) source.findViewById(id)");
-                codeClass.addMethod($Method.build());
-
-                // Method `getResourceId`: private int getResourceId(String name)
-                MethodSpec.Builder getResourceIdMethod = MethodSpec.methodBuilder("getResourceId")
-                        .addModifiers(Modifier.PRIVATE)
-                        .returns(int.class)
-                        .addParameter(String.class, "name")
-                        .addStatement("$T rList = new $T()", ParameterizedTypeName.get(List.class, String.class), ParameterizedTypeName.get(ArrayList.class, String.class));
-                for (Element rootElement : roundEnvironment.getRootElements()) {
-                    String name = rootElement.toString();
-                    if (name.endsWith(".R")) {
-                        getResourceIdMethod.addStatement("rList.add($S)", name.substring(0, name.length() - 2));
-                    }
-                }
-                getResourceIdMethod
-                        .beginControlFlow("for ($T pkg : rList)", String.class)
-                        .addStatement("$T id = mTarget.getResources().getIdentifier(name, \"id\", pkg);", int.class)
-                        .beginControlFlow("if (id != 0)")
-                        .addStatement("return id")
-                        .endControlFlow()
-                        .endControlFlow()
-                        .addStatement("return 0");
-                codeClass.addMethod(getResourceIdMethod.build());
-
                 JavaFile.builder(mElementUtils.getPackageOf(clazz).toString(), codeClass.build()).build().writeTo(mFiler);
             }
         } catch (Exception e) {
@@ -150,7 +115,7 @@ public class BindViewProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> set = new HashSet<>();
-        set.add(BindView.class.getCanonicalName());
+        set.add(Bind.class.getCanonicalName());
         return set;
     }
 
@@ -175,17 +140,5 @@ public class BindViewProcessor extends AbstractProcessor {
 
         String xmlName = type.toLowerCase() + desc;
         return xmlName.replaceAll("[A-Z]", "_$0").toLowerCase();
-    }
-
-    private static class BindViewData {
-        public String type;
-        public String javaName;
-        public String xmlName;
-
-        public BindViewData(String type, String javaName, String xmlName) {
-            this.type = type;
-            this.javaName = javaName;
-            this.xmlName = xmlName;
-        }
     }
 }

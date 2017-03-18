@@ -6,14 +6,18 @@
     tools:context="com.walfud.bindview.app.MainActivity">
 
     <TextView
-        android:id="@+id/tv_foo"
+        android:id="@+id/tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/iv_foo"
+        android:layout_centerHorizontal="true"
         android:text="Hello World!" />
 
     <ImageView
-        android:id="@+id/iv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:id="@+id/iv_foo"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_centerInParent="true"
+        android:src="@mipmap/ic_launcher"/>
 
 </RelativeLayout>

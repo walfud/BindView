@@ -5,29 +5,25 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.walfud.bindview.apt.BindView;
+import com.walfud.bindview.BindView;
+import com.walfud.bindview.apt.Bind;
 import com.walfud.bindviewdemo.R;
 
 
 public class MainActivity extends Activity {
 
-    @BindView
-    public TextView mFooTv;
-    @BindView
-    public ImageView mIv;
+    @Bind
+    public TextView mTv;
+    @Bind
+    public ImageView mFooIv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        BindView.inject(this);
 
-        com.walfud.bindview.BindView.inject(this);
-
-        findViewById(foo());
-        mFooTv.setText("bind successfully");
-    }
-
-    private int foo() {
-        return 123;
+        mTv.setText("Hello Bind!");
+        mFooIv.setImageResource(R.mipmap.ic_launcher_round);
     }
 }
