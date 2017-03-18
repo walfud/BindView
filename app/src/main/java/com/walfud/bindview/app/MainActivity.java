@@ -6,7 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.walfud.bindview.BindView;
-import com.walfud.bindview.apt.Bind;
+import com.walfud.bindview.annotation.Bind;
 import com.walfud.bindviewdemo.R;
 
 

@@ -23,5 +23,5 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
     compile project(':bindview')
-    compile project(':apt')     // TODO: apt
+    apt project(':processor')
 }

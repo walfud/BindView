@@ -1,1 +1,1 @@
-include ':app', ':bindview', ':apt'
+include ':app', ':bindview', ':processor', ':annotation'

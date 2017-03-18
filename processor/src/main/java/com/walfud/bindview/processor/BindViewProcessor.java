@@ -1,4 +1,4 @@
-package com.walfud.bindview.apt;
+package com.walfud.bindview.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
@@ -7,6 +7,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
+import com.walfud.bindview.annotation.Bind;
 
 import java.util.ArrayList;
 import java.util.HashMap;
