@@ -1,20 +1,30 @@
+plugins {
+    id "com.github.dcendents.android-maven" version "1.5"       // https://github.com/dcendents/android-maven-gradle-plugin
+    id "com.jfrog.bintray" version "1.7.3"                      // https://github.com/bintray/gradle-bintray-plugin
+
+    id "me.tatarka.retrolambda" version "3.6.0"
+}
+
 apply plugin: 'com.android.library'
+apply from: '../config.properties'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion config.compileSdkVersion
+    buildToolsVersion config.buildToolsVersion
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion config.minSdkVersion
+        targetSdkVersion config.targetSdkVersion
+        versionCode config.majorVersion * 100 + config.minorVersion * 10 + config.patchVersion
+        versionName config.majorVersion + "." + config.minorVersion + "." + config.patchVersion
+        multiDexEnabled true
+
+        consumerProguardFiles 'proguard-rules.pro'
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
+
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
 }
 
@@ -22,3 +32,5 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile project(':annotation')
 }
+
+apply from: '../jcenter.gradle'
