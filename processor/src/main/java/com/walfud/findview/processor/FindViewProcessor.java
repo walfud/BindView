@@ -1,4 +1,4 @@
-package com.walfud.bindview.processor;
+package com.walfud.findview.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
@@ -7,7 +7,7 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.walfud.bindview.annotation.Bind;
+import com.walfud.findview.annotation.Find;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +33,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 @AutoService(Processor.class)
-public class BindViewProcessor extends AbstractProcessor {
+public class FindViewProcessor extends AbstractProcessor {
 
     private Messager mMessager;
     private Filer mFiler;
@@ -55,25 +55,25 @@ public class BindViewProcessor extends AbstractProcessor {
         try {
             //
             Map<TypeElement, List<VariableElement>> class_field = new HashMap<>();
-            for (Element element : roundEnvironment.getElementsAnnotatedWith(Bind.class)) {
-                VariableElement bindField = (VariableElement) element;
-                TypeElement clazz = (TypeElement) bindField.getEnclosingElement();
+            for (Element element : roundEnvironment.getElementsAnnotatedWith(Find.class)) {
+                VariableElement findField = (VariableElement) element;
+                TypeElement clazz = (TypeElement) findField.getEnclosingElement();
 
-                List<VariableElement> bindFieldList = class_field.get(clazz);
-                if (bindFieldList == null) {
-                    bindFieldList = new ArrayList<>();
-                    class_field.put(clazz, bindFieldList);
+                List<VariableElement> findFieldList = class_field.get(clazz);
+                if (findFieldList == null) {
+                    findFieldList = new ArrayList<>();
+                    class_field.put(clazz, findFieldList);
                 }
-                bindFieldList.add(bindField);
+                findFieldList.add(findField);
             }
 
             //
             for (Map.Entry<TypeElement, List<VariableElement>> entry : class_field.entrySet()) {
                 TypeElement clazz = entry.getKey();
-                List<VariableElement> bindFieldList = entry.getValue();
+                List<VariableElement> findFieldList = entry.getValue();
 
-                // Class `Xxx$$BindView`: public class Xxx$$BindView
-                TypeSpec.Builder codeClass = TypeSpec.classBuilder(clazz.getSimpleName().toString() + "$$BindView")
+                // Class `Xxx$$FindView`: public class Xxx$$FindView
+                TypeSpec.Builder codeClass = TypeSpec.classBuilder(clazz.getSimpleName().toString() + "$$FindView")
                         .addModifiers(Modifier.PUBLIC)
                         .addField(      // Target fields
                                 FieldSpec.builder(TypeName.get(clazz.asType()), "mTarget", Modifier.PRIVATE).build()
@@ -86,18 +86,18 @@ public class BindViewProcessor extends AbstractProcessor {
                                         .build()
                         );
 
-                // Method `bind`: public void bind(View source)
-                MethodSpec.Builder bindMethod = MethodSpec.methodBuilder("bind")
+                // Method `find`: public void find(View source)
+                MethodSpec.Builder findMethod = MethodSpec.methodBuilder("find")
                         .addModifiers(Modifier.PUBLIC)
                         .returns(TypeName.VOID)
                         .addParameter(ClassName.get("android.view", "View"), "source");
-                for (VariableElement bindField : bindFieldList) {
-                    String javaName = bindField.getSimpleName().toString();
+                for (VariableElement findField : findFieldList) {
+                    String javaName = findField.getSimpleName().toString();
                     String xmlName = javaName2XmlName(javaName);
 
-                    bindMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, bindField.asType(), xmlName);
+                    findMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, findField.asType(), xmlName);
                 }
-                codeClass.addMethod(bindMethod.build());
+                codeClass.addMethod(findMethod.build());
                 JavaFile.builder(mElementUtils.getPackageOf(clazz).toString(), codeClass.build()).build().writeTo(mFiler);
             }
         } catch (Exception e) {
@@ -116,7 +116,7 @@ public class BindViewProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> set = new HashSet<>();
-        set.add(Bind.class.getCanonicalName());
+        set.add(Find.class.getCanonicalName());
         return set;
     }
 

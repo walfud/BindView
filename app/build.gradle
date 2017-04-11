@@ -5,7 +5,7 @@ android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
     defaultConfig {
-        applicationId "com.walfud.bindviewdemo"
+        applicationId "com.walfud.findviewdemo"
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 1
@@ -22,6 +22,6 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
-    compile project(':bindview')
+    compile project(':findview')
     apt project(':processor')
 }

@@ -1,13 +1,13 @@
-# BindView
+# FindView
 更简单的控件绑定库
 
 # Usage
-1. 根据命名约定, 在控件声明 `@Bind` 注解
-2. 在 `onCreate` 方法中, 使用 `BindView.inject` 注入依赖
+1. 根据命名约定, 在控件声明 `@Find` 注解
+2. 在 `onCreate` 方法中, 使用 `FindView.inject` 注入依赖
 
-![](https://github.com/walfud/BindView/blob/master/doc/usage.png)
+![](https://github.com/walfud/FindView/blob/master/doc/usage.png)
 
-![](https://github.com/walfud/BindView/blob/master/doc/show.png)
+![](https://github.com/walfud/FindView/blob/master/doc/show.png)
 
 License
 =======

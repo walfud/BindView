@@ -1,4 +1,4 @@
-package com.walfud.bindview.annotation;
+package com.walfud.findview.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,6 +11,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.FIELD})
-public @interface Bind {
+public @interface Find {
 
 }
