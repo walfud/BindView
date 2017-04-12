@@ -1,1 +1,1 @@
-include ':app', ':findview', ':processor', ':annotation'
+include ':app', ':dustofappearance', ':processor', ':annotation'

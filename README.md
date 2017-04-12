@@ -1,13 +1,13 @@
-# FindView
+# DustOfAppearance
 更简单的控件绑定库
 
 # Usage
 1. 根据命名约定, 在控件声明 `@Find` 注解
-2. 在 `onCreate` 方法中, 使用 `FindView.inject` 注入依赖
+2. 在 `onCreate` 方法中, 使用 `DustOfAppearance.inject` 注入依赖
 
-![](https://github.com/walfud/FindView/blob/master/doc/usage.png)
+![](https://github.com/walfud/DustOfAppearance/blob/master/doc/usage.png)
 
-![](https://github.com/walfud/FindView/blob/master/doc/show.png)
+![](https://github.com/walfud/DustOfAppearance/blob/master/doc/show.png)
 
 License
 =======

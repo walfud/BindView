@@ -10,7 +10,7 @@ android {
     buildToolsVersion config.buildToolsVersion
 
     defaultConfig {
-        applicationId "com.walfud.findviewdemo"
+        applicationId "com.walfud.dustofappearancedemo"
         minSdkVersion config.minSdkVersion
         targetSdkVersion config.targetSdkVersion
         versionCode config.versionCode
@@ -51,8 +51,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
-//    compile project(':findview')
-//    annotationProcessor project(':processor')
-    compile "com.walfud:findview:${config.versionName}"
-    annotationProcessor "com.walfud:findview-processor:${config.versionName}"
+    compile project(':dustofappearance')
+    annotationProcessor project(':processor')
+//    compile "com.walfud:dustofappearance:${config.versionName}"
+//    annotationProcessor "com.walfud:dustofappearance-processor:${config.versionName}"
 }
