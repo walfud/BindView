@@ -1,3 +1,7 @@
+plugins {
+//    id "com.github.dcendents.android-maven" version "1.5"       // https://github.com/dcendents/android-maven-gradle-plugin
+    id "com.jfrog.bintray" version "1.7.3"                      // https://github.com/bintray/gradle-bintray-plugin
+}
 apply plugin: 'java'
 
 dependencies {
@@ -6,3 +10,5 @@ dependencies {
 
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"
+
+apply from: '../jcenter-java.gradle'

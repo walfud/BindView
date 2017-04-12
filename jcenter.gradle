@@ -4,7 +4,7 @@
 //}
 
 
-def configFile = rootProject.file("jcenter.properties")
+def configFile = project.file("jcenter.properties")
 if (!configFile.exists()) {
     throw new IllegalArgumentException("Can not find '${configFile}'")
 }

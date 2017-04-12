@@ -1,11 +1,19 @@
+plugins {
+//    id "com.github.dcendents.android-maven" version "1.5"       // https://github.com/dcendents/android-maven-gradle-plugin
+    id "com.jfrog.bintray" version "1.7.3"                      // https://github.com/bintray/gradle-bintray-plugin
+}
 apply plugin: 'java'
+apply from: '../config.properties'
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile 'com.google.auto.service:auto-service:1.0-rc2'
     compile 'com.squareup:javapoet:1.8.0'
-    compile project(':annotation')
+//    compile project(':annotation')
+    compile "com.walfud:findview-annotation:${config.versionName}"
 }
 
 sourceCompatibility = "1.7"
 targetCompatibility = "1.7"
+
+apply from: '../jcenter-java.gradle'

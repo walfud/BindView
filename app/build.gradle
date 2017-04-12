@@ -13,8 +13,8 @@ android {
         applicationId "com.walfud.findviewdemo"
         minSdkVersion config.minSdkVersion
         targetSdkVersion config.targetSdkVersion
-        versionCode config.majorVersion * 100 + config.minorVersion * 10 + config.patchVersion
-        versionName config.majorVersion + "." + config.minorVersion + "." + config.patchVersion
+        versionCode config.versionCode
+        versionName config.versionName
     }
     signingConfigs {
         release {
@@ -51,6 +51,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
-    compile project(':findview')
-    annotationProcessor project(':processor')
+//    compile project(':findview')
+//    annotationProcessor project(':processor')
+    compile "com.walfud:findview:${config.versionName}"
+    annotationProcessor "com.walfud:findview-processor:${config.versionName}"
 }

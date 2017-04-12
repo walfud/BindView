@@ -1,0 +1,114 @@
+//plugins {
+//    id "com.github.dcendents.android-maven" version "1.5"       // https://github.com/dcendents/android-maven-gradle-plugin
+//    id "com.jfrog.bintray" version "1.7.3"                      // https://github.com/bintray/gradle-bintray-plugin
+//}
+
+
+apply plugin: 'maven-publish'
+apply from: '../config.properties'
+
+
+def jcenterConfigFile = project.file("jcenter.properties")
+if (!jcenterConfigFile.exists()) {
+    throw new IllegalArgumentException("Can not find '${jcenterConfigFile}'")
+}
+def jcenterConfig = new Properties()
+jcenterConfig.load(jcenterConfigFile.newDataInputStream())
+
+// MISC.
+def __DEBUG = Boolean.valueOf(getProp(jcenterConfig, 'DEBUG', false))
+// Maven Information
+def __MAVEN_USER = getProp(jcenterConfig, 'MAVEN_USER', __DEBUG)
+def __MAVEN_KEY = getProp(jcenterConfig, 'MAVEN_KEY', __DEBUG)
+def __MAVEN_ORGAN = getProp(jcenterConfig, 'MAVEN_ORGAN', __DEBUG)
+def __MAVEN_REPO = getProp(jcenterConfig, 'MAVEN_REPO', __DEBUG)
+def __LICENSES = getProp(jcenterConfig, 'LICENSES', __DEBUG)
+// Artifact Information
+def __ARTIFACT_GROUP = getProp(jcenterConfig, 'ARTIFACT_GROUP', __DEBUG)
+def __ARTIFACT_NAME = getProp(jcenterConfig, 'ARTIFACT_NAME', __DEBUG)
+def __ARTIFACT_VERSION = config.versionName
+def __ARTIFACT_OVERRIDE = Boolean.valueOf(getProp(jcenterConfig, 'ARTIFACT_OVERRIDE', __DEBUG))
+// User Information
+def __MY_ID = getProp(jcenterConfig, 'MY_ID', __DEBUG)
+def __MY_NAME = getProp(jcenterConfig, 'MY_NAME', __DEBUG)
+def __MY_EMAIL = getProp(jcenterConfig, 'MY_EMAIL', __DEBUG)
+// Project Information
+def __HOME_URL = getProp(jcenterConfig, 'HOME_URL', __DEBUG)
+def __VCS_URL = getProp(jcenterConfig, 'VCS_URL', __DEBUG)
+
+
+task sourceJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId __ARTIFACT_GROUP
+            artifactId __ARTIFACT_NAME
+            version __ARTIFACT_VERSION
+
+            from components.java
+            artifact sourceJar
+            artifact javadocJar
+
+            pom.withXml {
+                Node root = asNode()
+                root.appendNode('name', __ARTIFACT_NAME)
+                root.appendNode('url', __VCS_URL)
+
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', __LICENSES)
+            }
+        }
+    }
+}
+
+//bintray {
+//    user = __MAVEN_USER
+//    key = __MAVEN_KEY
+//
+////    configurations = ['archives']
+//    publish = true
+//    override = __ARTIFACT_OVERRIDE
+//    publications = ['mavenJava']
+////    configurations = ['archives']
+//
+//    pkg {
+//        userOrg = __MAVEN_ORGAN
+//        repo = __MAVEN_REPO
+//        name = __ARTIFACT_NAME
+//        websiteUrl = __HOME_URL
+//        vcsUrl = __VCS_URL
+//        licenses = [__LICENSES]
+//    }
+//}
+
+
+def getProp(properties, key, debug) {
+    def value = null
+    def src = null
+
+    if (hasProperty(key)) {
+        value = getProperty(key)
+        src = 'project'
+    } else if (properties.getProperty(key) != null) {
+        value = properties.getProperty(key)
+        src = 'jcenter.properties'
+    } else {
+        value = System.getenv(key)
+        src = 'System Environment'
+    }
+
+    if (debug) {
+        def secureValue = key == 'MAVEN_KEY' ? "${value[0..1]}..[protected]..${value[-2..-1]}" : value
+        println("`${key}=${secureValue}`\t<= ${src}")
+    }
+
+    return value
+}
