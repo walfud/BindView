@@ -74,7 +74,7 @@ public class FindViewProcessor extends AbstractProcessor {
                 List<VariableElement> findViewFieldList = entry.getValue();
 
                 // Class `Xxx$$DustOfAppearance`: public class Xxx$$DustOfAppearance
-                TypeSpec.Builder codeClass = TypeSpec.classBuilder(clazz.getSimpleName().toString() + Constants.CLASS_NAME)
+                TypeSpec.Builder codeClass = TypeSpec.classBuilder(clazz.getSimpleName().toString() + "$$" + Constants.CLASS_NAME)
                         .addModifiers(Modifier.PUBLIC)
                         .addField(      // Target fields
                                 FieldSpec.builder(TypeName.get(clazz.asType()), "mTarget", Modifier.PRIVATE).build()

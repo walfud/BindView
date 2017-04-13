@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
 public class DustOfAppearance {
     public static void inject(Activity activity) {
         try {
-            Class clazz = Class.forName(activity.getClass().getCanonicalName() + Constants.CLASS_NAME);
+            Class clazz = Class.forName(activity.getClass().getCanonicalName() + "$$" + Constants.CLASS_NAME);
             Constructor constructor = clazz.getConstructor(Class.forName(activity.getClass().getCanonicalName()));
             Object obj = constructor.newInstance(activity);
 
