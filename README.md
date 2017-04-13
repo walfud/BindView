@@ -9,6 +9,9 @@
 
 ![](https://github.com/walfud/DustOfAppearance/blob/master/doc/show.png)
 
+# Compile
+`./gradlew :annotation:publishToMavenLocal :processor:publishToMavenLocal :dustofappearance:install`
+
 License
 =======
     Copyright 2013 walfud.
