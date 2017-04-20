@@ -13,9 +13,9 @@ import com.walfud.dustofappearancedemo.R;
 public class MainActivity extends Activity {
 
     @FindView
-    public TextView mTv;
+    TextView mTv;
     @FindView
-    public ImageView mFooIv;
+    private ImageView mFooIv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -10,6 +10,7 @@ import com.squareup.javapoet.TypeSpec;
 import com.walfud.dustofappearance.Constants;
 import com.walfud.dustofappearance.annotation.FindView;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -70,19 +71,19 @@ public class FindViewProcessor extends AbstractProcessor {
 
             //
             for (Map.Entry<TypeElement, List<VariableElement>> entry : class_field.entrySet()) {
-                TypeElement clazz = entry.getKey();
+                TypeElement targetClass = entry.getKey();
                 List<VariableElement> findViewFieldList = entry.getValue();
 
                 // Class `Xxx$$DustOfAppearance`: public class Xxx$$DustOfAppearance
-                TypeSpec.Builder codeClass = TypeSpec.classBuilder(clazz.getSimpleName().toString() + "$$" + Constants.CLASS_NAME)
+                TypeSpec.Builder injectorClass = TypeSpec.classBuilder(targetClass.getSimpleName().toString() + "$$" + Constants.CLASS_NAME)
                         .addModifiers(Modifier.PUBLIC)
                         .addField(      // Target fields
-                                FieldSpec.builder(TypeName.get(clazz.asType()), "mTarget", Modifier.PRIVATE).build()
+                                FieldSpec.builder(TypeName.get(targetClass.asType()), "mTarget", Modifier.PRIVATE).build()
                         )
                         .addMethod(     // Constructor with target as parameter
                                 MethodSpec.constructorBuilder()
                                         .addModifiers(Modifier.PUBLIC)
-                                        .addParameter(TypeName.get(clazz.asType()), "target")
+                                        .addParameter(TypeName.get(targetClass.asType()), "target")
                                         .addStatement("mTarget = target")
                                         .build()
                         );
@@ -95,11 +96,23 @@ public class FindViewProcessor extends AbstractProcessor {
                 for (VariableElement findViewField : findViewFieldList) {
                     String javaName = findViewField.getSimpleName().toString();
                     String xmlName = javaName2XmlName(javaName);
-
-                    findViewMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, findViewField.asType(), xmlName);
+                    if (!findViewField.getModifiers().contains(Modifier.PROTECTED)
+                            && !findViewField.getModifiers().contains(Modifier.PRIVATE)) {
+                        findViewMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, findViewField.asType(), xmlName);
+                    } else {
+                        // Reflect
+                        findViewMethod
+                                .beginControlFlow("try")
+                                .addStatement("$T R$L = $L.class.getDeclaredField($S)", Field.class, javaName, targetClass.getSimpleName().toString(), javaName)
+                                .addStatement("R$L.setAccessible(true)", javaName)
+                                .addStatement("R$L.set(mTarget, ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())))", javaName, findViewField.asType(), xmlName)
+                                .nextControlFlow("catch (Exception e)")
+                                .addStatement("throw new RuntimeException($S)", String.format("No such field: %s", javaName))
+                                .endControlFlow();
+                    }
                 }
-                codeClass.addMethod(findViewMethod.build());
-                JavaFile.builder(mElementUtils.getPackageOf(clazz).toString(), codeClass.build()).build().writeTo(mFiler);
+                injectorClass.addMethod(findViewMethod.build());
+                JavaFile.builder(mElementUtils.getPackageOf(targetClass).toString(), injectorClass.build()).build().writeTo(mFiler);
             }
         } catch (Exception e) {
             e.printStackTrace();
