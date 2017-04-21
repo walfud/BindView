@@ -8,9 +8,9 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.walfud.dustofappearance.Constants;
+import com.walfud.dustofappearance.Utils;
 import com.walfud.dustofappearance.annotation.FindView;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -101,14 +101,7 @@ public class FindViewProcessor extends AbstractProcessor {
                         findViewMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, findViewField.asType(), xmlName);
                     } else {
                         // Reflect
-                        findViewMethod
-                                .beginControlFlow("try")
-                                .addStatement("$T R$L = $L.class.getDeclaredField($S)", Field.class, javaName, targetClass.getSimpleName().toString(), javaName)
-                                .addStatement("R$L.setAccessible(true)", javaName)
-                                .addStatement("R$L.set(mTarget, ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())))", javaName, findViewField.asType(), xmlName)
-                                .nextControlFlow("catch (Exception e)")
-                                .addStatement("throw new RuntimeException($S)", String.format("No such field: %s", javaName))
-                                .endControlFlow();
+                        findViewMethod.addStatement("$T.$L(mTarget, $S, ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())))", Utils.class, "reflectSet", javaName, findViewField.asType(), xmlName);
                     }
                 }
                 injectorClass.addMethod(findViewMethod.build());
