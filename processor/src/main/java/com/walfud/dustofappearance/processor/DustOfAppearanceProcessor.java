@@ -11,6 +11,7 @@ import com.squareup.javapoet.TypeSpec;
 import com.walfud.dustofappearance.Constants;
 import com.walfud.dustofappearance.Utils;
 import com.walfud.dustofappearance.annotation.FindView;
+import com.walfud.dustofappearance.annotation.OnClick;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -36,7 +38,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 @AutoService(Processor.class)
-public class FindViewProcessor extends AbstractProcessor {
+public class DustOfAppearanceProcessor extends AbstractProcessor {
 
     private Messager mMessager;
     private Filer mFiler;
@@ -57,23 +59,34 @@ public class FindViewProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         try {
             // Traversal source code
-            Map<TypeElement, List<VariableElement>> class_field = new HashMap<>();
+            Map<TypeElement, InjectorData> class_toInject = new HashMap<>();
             for (Element element : roundEnvironment.getElementsAnnotatedWith(FindView.class)) {
-                VariableElement findViewField = (VariableElement) element;
-                TypeElement clazz = (TypeElement) findViewField.getEnclosingElement();
+                VariableElement findViewElement = (VariableElement) element;
+                TypeElement clazz = (TypeElement) findViewElement.getEnclosingElement();
 
-                List<VariableElement> findViewFieldList = class_field.get(clazz);
-                if (findViewFieldList == null) {
-                    findViewFieldList = new ArrayList<>();
-                    class_field.put(clazz, findViewFieldList);
+                InjectorData injectorData = class_toInject.get(clazz);
+                if (injectorData == null) {
+                    injectorData = new InjectorData();
+                    class_toInject.put(clazz, injectorData);
                 }
-                findViewFieldList.add(findViewField);
+                injectorData.findViewElementList.add(findViewElement);
+            }
+            for (Element element : roundEnvironment.getElementsAnnotatedWith(OnClick.class)) {
+                ExecutableElement onClickElement = (ExecutableElement) element;
+                TypeElement clazz = (TypeElement) onClickElement.getEnclosingElement();
+
+                InjectorData injectorData = class_toInject.get(clazz);
+                if (injectorData == null) {
+                    injectorData = new InjectorData();
+                    class_toInject.put(clazz, injectorData);
+                }
+                injectorData.onClickElementList.add(onClickElement);
             }
 
             // Generate injector for each target class
-            for (Map.Entry<TypeElement, List<VariableElement>> entry : class_field.entrySet()) {
+            for (Map.Entry<TypeElement, InjectorData> entry : class_toInject.entrySet()) {
                 TypeElement targetClass = entry.getKey();
-                List<VariableElement> findViewFieldList = entry.getValue();
+                InjectorData injectorData = entry.getValue();
 
                 // Class `Xxx$$DustOfAppearance`: public class Xxx$$DustOfAppearance
                 TypeSpec.Builder injectorClass = TypeSpec.classBuilder(targetClass.getSimpleName().toString() + "$$" + Constants.CLASS_NAME)
@@ -94,12 +107,11 @@ public class FindViewProcessor extends AbstractProcessor {
                         .addModifiers(Modifier.PUBLIC)
                         .returns(TypeName.VOID)
                         .addParameter(ClassName.get("android.view", "View"), "source");
-                for (VariableElement findViewField : findViewFieldList) {
-                    String javaName = findViewField.getSimpleName().toString();
-                    String xmlName = javaName2XmlName(javaName);
-                    CodeBlock findFragment = CodeBlock.builder().add("($T) source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", findViewField.asType(), xmlName).build();
-                    if (!findViewField.getModifiers().contains(Modifier.PROTECTED)
-                            && !findViewField.getModifiers().contains(Modifier.PRIVATE)) {
+                for (VariableElement findViewElement : injectorData.findViewElementList) {
+                    String javaName = findViewElement.getSimpleName().toString();
+                    String xmlName = javaName2XmlName_findView(javaName);
+                    CodeBlock findFragment = CodeBlock.builder().add("($T) source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", findViewElement.asType(), xmlName).build();
+                    if (isPackageAccessible(findViewElement)) {
                         findViewMethod.addCode("mTarget.$L = ", javaName)
                                 .addCode(findFragment)
                                 .addStatement("");
@@ -111,6 +123,26 @@ public class FindViewProcessor extends AbstractProcessor {
                     }
                 }
                 injectorClass.addMethod(findViewMethod.build());
+
+                // Method `setOnClickListener`: public void setOnClickListener(View source)
+                MethodSpec.Builder setOnClickListenerMethod = MethodSpec.methodBuilder(Constants.METHOD_SET_ON_CLICK_LISTENER)
+                        .addModifiers(Modifier.PUBLIC)
+                        .returns(TypeName.VOID)
+                        .addParameter(ClassName.get("android.view", "View"), "source");
+                for (ExecutableElement onClickElement : injectorData.onClickElementList) {
+                    String javaName = onClickElement.getSimpleName().toString();
+                    String xmlName = javaName2XmlName_setOnClickListener(javaName);
+                    setOnClickListenerMethod.addStatement("source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())).setOnClickListener($L)",
+                            xmlName, TypeSpec.anonymousClassBuilder("").superclass(ClassName.get("android.view", "View.OnClickListener"))
+                                    .addMethod(MethodSpec.methodBuilder("onClick")
+                                            .addModifiers(Modifier.PUBLIC)
+                                            .addAnnotation(Override.class)
+                                            .addParameter(ClassName.get("android.view", "View"), "view")
+                                            .addStatement("mTarget.$L(view)", javaName)
+                                            .build())
+                                    .build());
+                }
+                injectorClass.addMethod(setOnClickListenerMethod.build());
 
                 // Generate java file
                 JavaFile.builder(mElementUtils.getPackageOf(targetClass).toString(), injectorClass.build()).build().writeTo(mFiler);
@@ -143,12 +175,12 @@ public class FindViewProcessor extends AbstractProcessor {
      * @return
      * @throws Exception
      */
-    private String javaName2XmlName(String javaName) throws Exception {
+    private String javaName2XmlName_findView(String javaName) throws Exception {
         // mTitleTv ('m' + desc + type)
         Pattern pattern = Pattern.compile("m(.*)([A-Z][a-z]*)");
         Matcher matcher = pattern.matcher(javaName);
         if (!matcher.matches()) {
-            throw new Exception(String.format("Naming NOT good(%s), follow: mTitleTv ('m' + desc + type)", javaName));
+            throw new Exception(String.format("Naming NOT good(%s), follow: mTitleTv ('m' + Desc + Type)", javaName));
         }
 
         String desc = matcher.group(1);
@@ -156,5 +188,38 @@ public class FindViewProcessor extends AbstractProcessor {
 
         String xmlName = type.toLowerCase() + desc;
         return xmlName.replaceAll("[A-Z]", "_$0").toLowerCase();
+    }
+
+    /**
+     * mTv -> tv
+     * mFooTv -> tv_foo
+     *
+     * @param javaName
+     * @return
+     * @throws Exception
+     */
+    private String javaName2XmlName_setOnClickListener(String javaName) throws Exception {
+        // mTitleTv ('m' + desc + type)
+        Pattern pattern = Pattern.compile("onClick(.*)([A-Z][a-z]*)");
+        Matcher matcher = pattern.matcher(javaName);
+        if (!matcher.matches()) {
+            throw new Exception(String.format("Naming NOT good(%s), follow: onClick ('onClick' + Desc + Type)", javaName));
+        }
+
+        String desc = matcher.group(1);
+        String type = matcher.group(2);
+
+        String xmlName = type.toLowerCase() + desc;
+        return xmlName.replaceAll("[A-Z]", "_$0").toLowerCase();
+    }
+
+    private boolean isPackageAccessible(Element element) {
+        return !element.getModifiers().contains(Modifier.PROTECTED)
+                && !element.getModifiers().contains(Modifier.PRIVATE);
+    }
+
+    private static class InjectorData {
+        public List<VariableElement> findViewElementList = new ArrayList<>();
+        public List<ExecutableElement> onClickElementList = new ArrayList<>();
     }
 }

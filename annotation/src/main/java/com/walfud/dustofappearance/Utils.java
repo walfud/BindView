@@ -9,9 +9,25 @@ import java.lang.reflect.Field;
 public class Utils {
     public static void reflectSet(Object target, String fieldName, Object value) {
         try {
+            reflect(target, fieldName).set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T reflectGet(T target, String fieldName) {
+        try {
+            return (T) reflect(target, fieldName).get(target);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Field reflect(Object target, String fieldName) {
+        try {
             Field field = target.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            field.set(target, value);
+            return field;
         } catch (Exception e) {
             throw new RuntimeException(String.format("Field NOT Found: %s", fieldName));
         }

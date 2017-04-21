@@ -14,4 +14,9 @@ public class Constants {
      * Method for find view: `public void findView(View source)`
      */
     public static final String METHOD_FIND_VIEW = "findView";
+
+    /**
+     * Method for set OnClick listener: `public void setOnClickListener(View source)`
+     */
+    public static final String METHOD_SET_ON_CLICK_LISTENER = "setOnClickListener";
 }

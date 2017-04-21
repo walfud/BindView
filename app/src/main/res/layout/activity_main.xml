@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.walfud.dustofappearance.app.MainActivity">
+    tools:context=".app.MainActivity">
 
     <TextView
         android:id="@+id/tv"
@@ -19,5 +19,13 @@
         android:layout_height="88dp"
         android:layout_centerInParent="true"
         android:src="@mipmap/ic_launcher"/>
+
+    <Button
+        android:id="@+id/btn_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/iv_foo"
+        android:layout_centerInParent="true"
+        android:text="btn_bar"/>
 
 </RelativeLayout>

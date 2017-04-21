@@ -17,8 +17,14 @@ public class DustOfAppearance {
             Constructor constructor = clazz.getConstructor(Class.forName(activity.getClass().getCanonicalName()));
             Object obj = constructor.newInstance(activity);
 
+            // Find View
             Method find = clazz.getMethod(Constants.METHOD_FIND_VIEW, View.class);
             find.invoke(obj, activity.getWindow().getDecorView());
+
+            // Set OnClick Listener
+            Method setOnClickListener = clazz.getMethod(Constants.METHOD_SET_ON_CLICK_LISTENER, View.class);
+            setOnClickListener.invoke(obj, activity.getWindow().getDecorView());
+
         } catch (Exception e) {
             e.printStackTrace();
         }
