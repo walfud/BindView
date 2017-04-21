@@ -2,6 +2,7 @@ package com.walfud.dustofappearance.processor;
 
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -96,12 +97,17 @@ public class FindViewProcessor extends AbstractProcessor {
                 for (VariableElement findViewField : findViewFieldList) {
                     String javaName = findViewField.getSimpleName().toString();
                     String xmlName = javaName2XmlName(javaName);
+                    CodeBlock findFragment = CodeBlock.builder().add("($T) source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", findViewField.asType(), xmlName).build();
                     if (!findViewField.getModifiers().contains(Modifier.PROTECTED)
                             && !findViewField.getModifiers().contains(Modifier.PRIVATE)) {
-                        findViewMethod.addStatement("mTarget.$L = ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", javaName, findViewField.asType(), xmlName);
+                        findViewMethod.addCode("mTarget.$L = ", javaName)
+                                .addCode(findFragment)
+                                .addStatement("");
                     } else {
                         // Reflect
-                        findViewMethod.addStatement("$T.$L(mTarget, $S, ($T) source.findViewById(mTarget.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())))", Utils.class, "reflectSet", javaName, findViewField.asType(), xmlName);
+                        findViewMethod.addCode("$T.$L(mTarget, $S, ", Utils.class, "reflectSet", javaName)
+                                .addCode(findFragment)
+                                .addStatement(")");
                     }
                 }
                 injectorClass.addMethod(findViewMethod.build());
