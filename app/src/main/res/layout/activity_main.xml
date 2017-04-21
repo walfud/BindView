@@ -20,12 +20,25 @@
         android:layout_centerInParent="true"
         android:src="@mipmap/ic_launcher"/>
 
-    <Button
-        android:id="@+id/btn_bar"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/iv_foo"
         android:layout_centerInParent="true"
-        android:text="btn_bar"/>
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="public listener\nbtn_cancel"
+            android:textSize="14sp"/>
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="private listener\nbtn_ok"
+            android:textSize="14sp"/>
+    </LinearLayout>
 
 </RelativeLayout>

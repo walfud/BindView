@@ -31,7 +31,11 @@ public class MainActivity extends Activity {
     }
 
     @OnClick
-    public void onClickBarBtn(View view) {
-        Toast.makeText(this, "Click btn_bar", Toast.LENGTH_SHORT).show();
+    public void onClickCancelBtn(View view) {
+        Toast.makeText(this, "public listener test ok", Toast.LENGTH_SHORT).show();
+    }
+    @OnClick
+    private void onClickOkBtn(View view) {
+        Toast.makeText(this, "PRIVATE listener test ok", Toast.LENGTH_SHORT).show();
     }
 }

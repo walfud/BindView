@@ -117,7 +117,7 @@ public class DustOfAppearanceProcessor extends AbstractProcessor {
                                 .addStatement("");
                     } else {
                         // Reflect
-                        findViewMethod.addCode("$T.$L(mTarget, $S, ", Utils.class, "reflectSet", javaName)
+                        findViewMethod.addCode("$T.$L(mTarget, $S, ", Utils.class, "reflectFieldSet", javaName)
                                 .addCode(findFragment)
                                 .addStatement(")");
                     }
@@ -132,14 +132,21 @@ public class DustOfAppearanceProcessor extends AbstractProcessor {
                 for (ExecutableElement onClickElement : injectorData.onClickElementList) {
                     String javaName = onClickElement.getSimpleName().toString();
                     String xmlName = javaName2XmlName_setOnClickListener(javaName);
+
+                    MethodSpec.Builder wrapperOnClickBuilder = MethodSpec.methodBuilder("onClick")
+                            .addModifiers(Modifier.PUBLIC)
+                            .addAnnotation(Override.class)
+                            .addParameter(ClassName.get("android.view", "View"), "view");
+                    if (isPackageAccessible(onClickElement)) {
+                        wrapperOnClickBuilder.addStatement("mTarget.$L(view)", javaName);
+                    } else {
+                        // Reflect
+                        wrapperOnClickBuilder.addStatement("$T.$L(mTarget, $S, View.class, view)", Utils.class, "reflectMethod1Invoke", javaName);
+                    }
                     setOnClickListenerMethod.addStatement("source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())).setOnClickListener($L)",
-                            xmlName, TypeSpec.anonymousClassBuilder("").superclass(ClassName.get("android.view", "View.OnClickListener"))
-                                    .addMethod(MethodSpec.methodBuilder("onClick")
-                                            .addModifiers(Modifier.PUBLIC)
-                                            .addAnnotation(Override.class)
-                                            .addParameter(ClassName.get("android.view", "View"), "view")
-                                            .addStatement("mTarget.$L(view)", javaName)
-                                            .build())
+                            xmlName, TypeSpec.anonymousClassBuilder("")
+                                    .superclass(ClassName.get("android.view", "View.OnClickListener"))
+                                    .addMethod(wrapperOnClickBuilder.build())
                                     .build());
                 }
                 injectorClass.addMethod(setOnClickListenerMethod.build());
