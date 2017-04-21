@@ -55,7 +55,7 @@ public class FindViewProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnvironment) {
         try {
-            //
+            // Traversal source code
             Map<TypeElement, List<VariableElement>> class_field = new HashMap<>();
             for (Element element : roundEnvironment.getElementsAnnotatedWith(FindView.class)) {
                 VariableElement findViewField = (VariableElement) element;
@@ -69,7 +69,7 @@ public class FindViewProcessor extends AbstractProcessor {
                 findViewFieldList.add(findViewField);
             }
 
-            //
+            // Generate injector for each target class
             for (Map.Entry<TypeElement, List<VariableElement>> entry : class_field.entrySet()) {
                 TypeElement targetClass = entry.getKey();
                 List<VariableElement> findViewFieldList = entry.getValue();
@@ -105,6 +105,8 @@ public class FindViewProcessor extends AbstractProcessor {
                     }
                 }
                 injectorClass.addMethod(findViewMethod.build());
+
+                // Generate java file
                 JavaFile.builder(mElementUtils.getPackageOf(targetClass).toString(), injectorClass.build()).build().writeTo(mFiler);
             }
         } catch (Exception e) {
