@@ -30,8 +30,9 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-//    compile project(':annotation')
-    compile "com.walfud:dustofappearance-annotation:${config.versionName}"
+
+    def isDebug = getProperty('DEBUG');
+    compile isDebug ? project(':annotation') : "com.walfud:dustofappearance-annotation:${config.versionName}"
 }
 
 apply from: '../jcenter.gradle'
