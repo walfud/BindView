@@ -51,6 +51,8 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
+//    compile project(':dustofappearance')
+//    compile project(':processor')
     def isDebug = getProperty('DEBUG');
     compile isDebug ? project(':dustofappearance') : "com.walfud:dustofappearance:${config.versionName}"
     annotationProcessor isDebug ? project(':processor') : "com.walfud:dustofappearance-processor:${config.versionName}"
