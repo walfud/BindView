@@ -18,8 +18,9 @@ public class DustOfAppearance {
 
     public static <T> void inject(T target, View source) {
         try {
-            Class clazz = Class.forName(target.getClass().getCanonicalName() + "$$" + Constants.CLASS_NAME);
-            Constructor constructor = clazz.getConstructor(Class.forName(target.getClass().getCanonicalName()));
+            String fullClassName = target.getClass().getName().substring(target.getClass().getPackage().getName().length() + 1).replace(".", "$"); // Take nested class into account
+            Class clazz = Class.forName(target.getClass().getPackage().getName() + "." + fullClassName + "$$" + Constants.CLASS_NAME);
+            Constructor constructor = clazz.getConstructor(Class.forName(target.getClass().getName()));
             Object obj = constructor.newInstance(target);
 
             // Find View

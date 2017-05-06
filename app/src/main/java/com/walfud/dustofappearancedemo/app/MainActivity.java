@@ -3,6 +3,7 @@ package com.walfud.dustofappearancedemo.app;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +20,8 @@ public class MainActivity extends Activity {
     TextView mTv;
     @FindView
     private ImageView mFooIv;
+    @FindView
+    ViewGroup mVg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +31,8 @@ public class MainActivity extends Activity {
 
         mTv.setText("Hello Find!");
         mFooIv.setImageResource(R.mipmap.ic_launcher_round);
+
+        new Inner(mVg);
     }
 
     @OnClick
@@ -37,5 +42,16 @@ public class MainActivity extends Activity {
     @OnClick
     private void onClickOkBtn(View view) {
         Toast.makeText(this, "PRIVATE listener test ok", Toast.LENGTH_SHORT).show();
+    }
+
+    //
+    static class Inner {
+        @FindView
+        TextView mCancelBtn;
+
+        public Inner(View view) {
+            DustOfAppearance.inject(this, view);
+            mCancelBtn.setAlpha(0.5f);
+        }
     }
 }

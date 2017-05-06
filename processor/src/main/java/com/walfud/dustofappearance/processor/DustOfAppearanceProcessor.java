@@ -91,7 +91,8 @@ public class DustOfAppearanceProcessor extends AbstractProcessor {
             InjectorData injectorData = entry.getValue();
 
             // Class `Xxx$$DustOfAppearance`: public class Xxx$$DustOfAppearance
-            TypeSpec.Builder injectorClass = TypeSpec.classBuilder(targetClass.getSimpleName().toString() + "$$" + Constants.CLASS_NAME)
+            String fullClassName = targetClass.toString().substring(mElementUtils.getPackageOf(targetClass).toString().length() + 1).replace(".", "$"); // Take nested class into account
+            TypeSpec.Builder injectorClass = TypeSpec.classBuilder(fullClassName + "$$" + Constants.CLASS_NAME)
                     .addModifiers(Modifier.PUBLIC)
                     .addField(      // Target fields
                             FieldSpec.builder(TypeName.get(targetClass.asType()), "mTarget", Modifier.PRIVATE).build()
@@ -172,7 +173,7 @@ public class DustOfAppearanceProcessor extends AbstractProcessor {
     @Override
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> set = new HashSet<>();
-        set.add(FindView.class.getCanonicalName());
+        set.add(FindView.class.getName());
         return set;
     }
 
