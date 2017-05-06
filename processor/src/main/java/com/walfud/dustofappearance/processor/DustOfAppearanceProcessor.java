@@ -112,7 +112,7 @@ public class DustOfAppearanceProcessor extends AbstractProcessor {
             for (VariableElement findViewElement : injectorData.findViewElementList) {
                 String javaName = findViewElement.getSimpleName().toString();
                 String xmlName = javaName2XmlName_findView(javaName);
-                CodeBlock findFragment = CodeBlock.builder().add("($T) source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName()))", findViewElement.asType(), xmlName).build();
+                CodeBlock findFragment = CodeBlock.builder().add("($T) source.findViewById(source.getResources().getIdentifier($S, \"id\", source.getContext().getPackageName()))", findViewElement.asType(), xmlName).build();
                 if (isPackageAccessible(findViewElement)) {
                     findViewMethod.addCode("mTarget.$L = ", javaName)
                             .addCode(findFragment)
@@ -145,7 +145,7 @@ public class DustOfAppearanceProcessor extends AbstractProcessor {
                     // Reflect
                     wrapperOnClickBuilder.addStatement("$T.$L(mTarget, $S, $T.class, view)", Utils.class, "reflectMethod1Invoke", javaName, TYPE_ANDROID_VIEW);
                 }
-                setOnClickListenerMethod.addStatement("source.findViewById(source.getResources().getIdentifier($S, \"id\", mTarget.getPackageName())).setOnClickListener($L)",
+                setOnClickListenerMethod.addStatement("source.findViewById(source.getResources().getIdentifier($S, \"id\", source.getContext().getPackageName())).setOnClickListener($L)",
                         xmlName, TypeSpec.anonymousClassBuilder("")
                                 .superclass(TYPE_ANDROID_VIEW_ONCLICKLISTENER)
                                 .addMethod(wrapperOnClickBuilder.build())

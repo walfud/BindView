@@ -11,19 +11,24 @@ import java.lang.reflect.Method;
  */
 
 public class DustOfAppearance {
+
     public static void inject(Activity activity) {
+        inject(activity, activity.getWindow().getDecorView());
+    }
+
+    public static <T> void inject(T target, View source) {
         try {
-            Class clazz = Class.forName(activity.getClass().getCanonicalName() + "$$" + Constants.CLASS_NAME);
-            Constructor constructor = clazz.getConstructor(Class.forName(activity.getClass().getCanonicalName()));
-            Object obj = constructor.newInstance(activity);
+            Class clazz = Class.forName(target.getClass().getCanonicalName() + "$$" + Constants.CLASS_NAME);
+            Constructor constructor = clazz.getConstructor(Class.forName(target.getClass().getCanonicalName()));
+            Object obj = constructor.newInstance(target);
 
             // Find View
             Method find = clazz.getMethod(Constants.METHOD_FIND_VIEW, View.class);
-            find.invoke(obj, activity.getWindow().getDecorView());
+            find.invoke(obj, source);
 
             // Set OnClick Listener
             Method setOnClickListener = clazz.getMethod(Constants.METHOD_SET_ON_CLICK_LISTENER, View.class);
-            setOnClickListener.invoke(obj, activity.getWindow().getDecorView());
+            setOnClickListener.invoke(obj, source);
 
         } catch (Exception e) {
             e.printStackTrace();
