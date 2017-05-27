@@ -11,6 +11,7 @@ dependencies {
     compile 'com.squareup:javapoet:1.8.0'
 
 //    compile project(':annotation')
+//    compile "com.walfud:dustofappearance-annotation:${config.versionName}"
     def isDebug = getProperty('DEBUG');
     compile isDebug ? project(':annotation') : "com.walfud:dustofappearance-annotation:${config.versionName}"
 }

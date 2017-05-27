@@ -53,6 +53,8 @@ dependencies {
 
 //    compile project(':dustofappearance')
 //    compile project(':processor')
+//    compile "com.walfud:dustofappearance:${config.versionName}"
+//    annotationProcessor "com.walfud:dustofappearance-processor:${config.versionName}"
     def isDebug = getProperty('DEBUG');
     compile isDebug ? project(':dustofappearance') : "com.walfud:dustofappearance:${config.versionName}"
     annotationProcessor isDebug ? project(':processor') : "com.walfud:dustofappearance-processor:${config.versionName}"
